@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, Control } from 'react-hook-form';
 import { TextField, Autocomplete } from '@mui/material';
 import axios from 'axios';
 
@@ -8,28 +8,21 @@ type FormValues = {
   product: { label: string; value: number };
 };
 
-interface ProductResponse {
-  id: number;
-  title: string;
-}
-
 type Option = {
   label: string;
   value: number;
 };
 
-// APIからデータを取得する関数
+// APIからデータを取得する汎用関数
 const fetchOptions = async <T extends { id: number; name?: string; title?: string }>(
   url: string,
   query?: string,
-  labelKey: keyof T = "name"
+  labelKey: keyof T = "name" // デフォルトを "name" に設定
 ): Promise<Option[]> => {
   try {
-    const response = await axios.get<T[]>(url, {
-      params: { q: query },
-    });
+    const response = await axios.get<T[]>(url, { params: { q: query } });
     return response.data.map((item) => ({
-      label: String(item[labelKey]), // labelをstringに変換
+      label: String(item[labelKey]),
       value: item.id,
     }));
   } catch (error) {
@@ -38,114 +31,90 @@ const fetchOptions = async <T extends { id: number; name?: string; title?: strin
   }
 };
 
-const fetchProductOptions = async (
-  url: string,
-  query?: string
-): Promise<Option[]> => {
-  try {
-    const response = await axios.get<ProductResponse[]>(url, {
-      params: { 'user_id': query }, // クエリパラメータの変更も確認
-    });
-    return response.data.map((item) => ({
-      label: item.title, // titleを使用
-      value: item.id,
-    }));
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return [];
-  }
-};
+// Autocomplete 共通コンポーネント
+const SearchAutocomplete = ({
+  name,
+  control,
+  label,
+  options,
+  onInputChange,
+}: {
+  name: keyof FormValues;
+  control: Control<FormValues>; 
+  label: string;
+  options: Option[];
+  onInputChange: (value: string) => void;
+}) => (
+  <Controller
+    name={name}
+    control={control}
+    render={({ field }) => (
+      <Autocomplete
+        {...field}
+        sx={{ width: 300 }}
+        options={options}
+        getOptionLabel={(option) => option?.label || ''} // オプションのラベルを取得
+        onInputChange={(event, value) => onInputChange(value)} // ユーザー入力時の処理
+        renderInput={(params) => (
+          <TextField {...params} label={label} variant="outlined" />
+        )}
+        onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
+      />
+    )}
+  />
+);
 
 export const MultipleSearchAutocomplete = () => {
   const { control } = useForm<FormValues>();
+  
   const [userOptions, setUserOptions] = useState<Option[]>([]);
   const [productOptions, setProductOptions] = useState<Option[]>([]);
 
-  // 初回に全オプションをロードするための useEffect
+  // 初回ロード時に全オプションを取得
   useEffect(() => {
     const loadInitialOptions = async () => {
       const initialUserOptions = await fetchOptions("https://jsonplaceholder.typicode.com/users");
-      const initialProductOptions = await fetchProductOptions("https://jsonplaceholder.typicode.com/posts");
+      const initialProductOptions = await fetchOptions("https://jsonplaceholder.typicode.com/posts", undefined, "title");
       setUserOptions(initialUserOptions);
       setProductOptions(initialProductOptions);
     };
-
-    loadInitialOptions(); // 初回ロード時にデータを取得
+    loadInitialOptions();
   }, []);
 
-  // ユーザーが入力した際にAPIを呼び出す関数
+  // ユーザー検索用の入力処理
   const handleUserInputChange = async (value: string) => {
-    if (value) {
-      const filteredOptions = await fetchOptions("https://jsonplaceholder.typicode.com/users", value);
-      setUserOptions(filteredOptions);
-    } else {
-      setUserOptions([]); // 入力がクリアされた場合にオプションをリセット
-    }
+    const filteredOptions = value
+      ? await fetchOptions("https://jsonplaceholder.typicode.com/users", value)
+      : [];
+    setUserOptions(filteredOptions);
   };
 
-  // プロダクトが入力された時にAPIを呼び出す関数
+  // プロダクト検索用の入力処理
   const handleProductInputChange = async (value: string) => {
-    if (value) {
-      const filteredOptions = await fetchProductOptions("https://jsonplaceholder.typicode.com/posts", value);
-      setProductOptions(filteredOptions);
-    } else {
-      setProductOptions([]); // 入力がクリアされた場合にオプションをリセット
-    }
+    const filteredOptions = value
+      ? await fetchOptions("https://jsonplaceholder.typicode.com/posts", value, "title")
+      : [];
+    setProductOptions(filteredOptions);
   };
-
 
   return (
     <form>
       {/* ユーザー検索用オートコンプリート */}
-      <Controller
+      <SearchAutocomplete
         name="user"
         control={control}
-        render={({ field }) => (
-          <Autocomplete
-            {...field}
-            sx={{ width: 300 }}
-            options={userOptions}
-            getOptionLabel={(option) => {
-              console.log("User Option:", option); // デバッグ用
-              return option?.label || ''; // ラベルが存在する場合に表示
-            }}
-            onInputChange={(event, value) => handleUserInputChange(value)} // ユーザー入力時の処理
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="ユーザー検索"
-                variant="outlined"
-              />
-            )}
-            onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
-          />
-        )}
+        label="ユーザー検索"
+        options={userOptions}
+        onInputChange={handleUserInputChange}
       />
 
       {/* プロダクト検索用オートコンプリート */}
-      <Controller
+      <SearchAutocomplete
         name="product"
         control={control}
-        render={({ field }) => (
-          <Autocomplete
-            {...field}
-            sx={{ width: 300 }}
-            options={productOptions}
-            getOptionLabel={(option) => {
-              console.log("Product Option:", option); // デバッグ用
-              return option?.label || ''; // ラベルが存在する場合に表示
-            }}
-            onInputChange={(event, value) => handleProductInputChange(value)} // プロダクト入力時の処理
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="プロダクト検索"
-                variant="outlined"
-              />
-            )}
-            onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
-          />
-        )}
+        label="プロダクト検索"
+        options={productOptions}
+        onInputChange={handleProductInputChange}
       />
     </form>
   );
