@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Autocomplete, CircularProgress } from '@mui/material';
+import { TextField, Autocomplete } from '@mui/material';
 import axios from 'axios';
 
 type FormValues = {
@@ -38,15 +38,12 @@ const fetchUserOptions = async (query?: string): Promise<Option[]> => {
 export const SearchAutocomplete = () => {
   const { control, handleSubmit } = useForm<FormValues>();
   const [options, setOptions] = useState<Option[]>([]);
-  const [loading, setLoading] = useState(false);
 
   // 初回に全オプションをロード
   useEffect(() => {
     const loadInitialOptions = async () => {
-      setLoading(true);
       const initialOptions = await fetchUserOptions(); // 初回に全てのユーザーを取得
       setOptions(initialOptions);
-      setLoading(false);
     };
     loadInitialOptions();
   }, []);
@@ -54,10 +51,8 @@ export const SearchAutocomplete = () => {
   // ユーザーが入力した際にAPIを呼び出す関数
   const handleInputChange = async (value: string) => {
     if (value) {
-      setLoading(true);
       const filteredOptions = await fetchUserOptions(value);
       setOptions(filteredOptions);
-      setLoading(false);
     }
   };
 
@@ -77,7 +72,6 @@ export const SearchAutocomplete = () => {
             options={options}
             getOptionLabel={(option) => option.label}
             onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時の処理
-            loading={loading}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -87,7 +81,6 @@ export const SearchAutocomplete = () => {
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
