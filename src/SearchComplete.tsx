@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Autocomplete, CircularProgress } from '@mui/material';
 import axios from 'axios';
@@ -12,11 +12,31 @@ export const SearchAutocomplete = () => {
   const [options, setOptions] = useState<Array<{ label: string; value: number }>>([]);
   const [loading, setLoading] = useState(false);
 
+  // 初回にすべてのオプションをロードする
+  useEffect(() => {
+    const fetchInitialOptions = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("https://jsonplaceholder.typicode.com/users");
+        const results = response.data.map((item: any) => ({
+          label: item.name,
+          value: item.id,
+        }));
+        setOptions(results);
+      } catch (error) {
+        console.error("Error fetching data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInitialOptions(); // 初回ロード
+  }, []);
+
   const fetchOptions = async (query: string) => {
     setLoading(true);
     try {
       const response = await axios.get("https://jsonplaceholder.typicode.com/users", {
-        params: { q: query }, // jsonplaceholderでは実際にフィルタリングはされませんが、例として使用
+        params: { q: query }, // jsonplaceholderではフィルタリングされない例
       });
       const results = response.data.map((item: any) => ({
         label: item.name,
