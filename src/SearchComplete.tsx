@@ -11,7 +11,6 @@ type FormValues = {
 interface UserResponse {
   id: number;
   name: string;
-  // 必要に応じて他のフィールドを追加
 }
 
 type Option = {
@@ -30,7 +29,7 @@ const fetchUserOptions = async (query?: string): Promise<Option[]> => {
       value: item.id,
     }));
   } catch (error) {
-    console.error("Error fetching data", error);
+    console.error("Error fetching data:", error);
     return [];
   }
 };
@@ -42,10 +41,10 @@ export const SearchAutocomplete = () => {
   // 初回に全オプションをロード
   useEffect(() => {
     const loadInitialOptions = async () => {
-      const initialOptions = await fetchUserOptions(); // 初回に全てのユーザーを取得
+      const initialOptions = await fetchUserOptions(); // 初回に全ユーザーを取得
       setOptions(initialOptions);
     };
-    loadInitialOptions();
+    loadInitialOptions(); // 初回ロード時にAPIを呼び出す
   }, []);
 
   // ユーザーが入力した際にAPIを呼び出す関数
@@ -71,20 +70,12 @@ export const SearchAutocomplete = () => {
             {...field}
             options={options}
             getOptionLabel={(option) => option.label}
-            onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時の処理
+            onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時にAPIを呼び出し
             renderInput={(params) => (
               <TextField
                 {...params}
                 label="ユーザー検索"
                 variant="outlined"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
               />
             )}
             onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
