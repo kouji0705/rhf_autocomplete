@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TextField, Autocomplete, Button, Box } from '@mui/material';
+import { TextField, Autocomplete } from '@mui/material';
 import axios from 'axios';
 
 type FormValues = {
@@ -57,7 +57,7 @@ const fetchProductOptions = async (
 };
 
 export const MultipleSearchAutocomplete = () => {
-  const { control, handleSubmit } = useForm<FormValues>();
+  const { control } = useForm<FormValues>();
   const [userOptions, setUserOptions] = useState<Option[]>([]);
   const [productOptions, setProductOptions] = useState<Option[]>([]);
 
@@ -93,13 +93,9 @@ export const MultipleSearchAutocomplete = () => {
     }
   };
 
-  // フォームの送信処理
-  const onSubmit = (data: FormValues) => {
-    console.log('選択されたデータ:', data);
-  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form>
       {/* ユーザー検索用オートコンプリート */}
       <Controller
         name="user"
@@ -151,13 +147,6 @@ export const MultipleSearchAutocomplete = () => {
           />
         )}
       />
-
-      {/* 送信ボタン */}
-      <Box mt={2}>
-        <Button variant="contained" color="primary" type="submit">
-          送信
-        </Button>
-      </Box>
     </form>
   );
 };
