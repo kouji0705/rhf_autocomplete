@@ -68,6 +68,7 @@ export const SearchAutocomplete = () => {
         render={({ field }) => (
           <Autocomplete
             {...field}
+			sx={{ width: 300 }}
             options={options}
             getOptionLabel={(option) => option.label}
             onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時にAPIを呼び出し

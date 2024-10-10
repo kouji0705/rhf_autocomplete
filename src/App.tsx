@@ -5,9 +5,6 @@ function App() {
 	return (
 		<div>
 			<SearchAutocomplete />
-			<SearchAutocomplete />
-			<SearchAutocomplete />
-			<SearchAutocomplete />
 		</div>
 	)
 }
