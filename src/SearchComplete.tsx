@@ -1,76 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { TextField, Autocomplete, CircularProgress } from "@mui/material";
-import axios from "axios";
-import _ from "lodash"; // Debounce を利用
+import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { TextField, Autocomplete, CircularProgress } from '@mui/material';
+import axios from 'axios';
 
-type SearchOption = {
-	label: string;
-	value: string;
+type FormValues = {
+  user: { label: string; value: number };
 };
 
 export const SearchAutocomplete = () => {
-	const [searchTerm, setSearchTerm] = useState("");
-	const [options, setOptions] = useState<SearchOption[]>([]);
-	const [loading, setLoading] = useState(false);
+  const { control, handleSubmit } = useForm<FormValues>();
+  const [options, setOptions] = useState<Array<{ label: string; value: number }>>([]);
+  const [loading, setLoading] = useState(false);
 
-	// API通信を行い、検索結果を取得する関数
-	const fetchOptions = async (query: string) => {
-		setLoading(true);
-		try {
-			const response = await axios.get("/api/search", { params: { q: query } });
-			const results = response.data.map((item: any) => ({
-				label: item.name,
-				value: item.id,
-			}));
-			setOptions(results);
-		} catch (error) {
-			console.error("Error fetching data", error);
-		} finally {
-			setLoading(false);
-		}
-	};
+  const fetchOptions = async (query: string) => {
+    setLoading(true);
+    try {
+      const response = await axios.get("https://jsonplaceholder.typicode.com/users", {
+        params: { q: query }, // jsonplaceholderでは実際にフィルタリングはされませんが、例として使用
+      });
+      const results = response.data.map((item: any) => ({
+        label: item.name,
+        value: item.id,
+      }));
+      setOptions(results);
+    } catch (error) {
+      console.error("Error fetching data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	// Debounce処理を使って検索文字列が更新されたらAPIリクエスト
-	const debouncedFetch = _.debounce((query: string) => {
-		if (query.length > 0) {
-			fetchOptions(query);
-		} else {
-			setOptions([]); // クエリが空の場合、オプションもクリア
-		}
-	}, 500); // 500ms の遅延
+  const onSubmit = (data: FormValues) => {
+    console.log('選択されたデータ:', data);
+  };
 
-	// ユーザーの入力が変わったときに処理
-	useEffect(() => {
-		debouncedFetch(searchTerm);
-		// クリーンアップ関数でdebouncedFetchをキャンセル
-		return () => {
-			debouncedFetch.cancel();
-		};
-	}, [debouncedFetch, searchTerm]);
-
-	return (
-		<Autocomplete
-			options={options}
-			getOptionLabel={(option) => option.label}
-			onInputChange={(event, newInputValue) => setSearchTerm(newInputValue)}
-			loading={loading}
-			renderInput={(params) => (
-				<TextField
-					{...params}
-					label="Search"
-					InputProps={{
-						...params.InputProps,
-						endAdornment: (
-							<>
-								{loading ? (
-									<CircularProgress color="inherit" size={20} />
-								) : null}
-								{params.InputProps.endAdornment}
-							</>
-						),
-					}}
-				/>
-			)}
-		/>
-	);
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Controller
+        name="user"
+        control={control}
+        render={({ field }) => (
+          <Autocomplete
+            {...field}
+            options={options}
+            getOptionLabel={(option) => option.label}
+            onInputChange={(event, value) => {
+              if (value) {
+                fetchOptions(value); // ユーザーが入力するたびにAPI呼び出し
+              }
+            }}
+            loading={loading}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="ユーザー検索"
+                variant="outlined"
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
+          />
+        )}
+      />
+      <button type="submit">送信</button>
+    </form>
+  );
 };
