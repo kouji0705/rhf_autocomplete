@@ -8,17 +8,10 @@ type FormValues = {
   product: { label: string; value: number };
 };
 
-// APIレスポンスの型定義
-interface UserResponse {
-  id: number;
-  name: string;
-}
-
 interface ProductResponse {
-    id: number;
-    title: string;
-  }
-  
+  id: number;
+  title: string;
+}
 
 type Option = {
   label: string;
@@ -26,13 +19,17 @@ type Option = {
 };
 
 // APIからデータを取得する関数
-const fetchOptions = async (url: string, query?: string): Promise<Option[]> => {
+const fetchOptions = async <T extends { id: number; name?: string; title?: string }>(
+  url: string,
+  query?: string,
+  labelKey: keyof T = "name"
+): Promise<Option[]> => {
   try {
-    const response = await axios.get<UserResponse[]>(url, {
+    const response = await axios.get<T[]>(url, {
       params: { q: query },
     });
     return response.data.map((item) => ({
-      label: item.name,
+      label: String(item[labelKey]), // labelをstringに変換
       value: item.id,
     }));
   } catch (error) {
@@ -41,22 +38,23 @@ const fetchOptions = async (url: string, query?: string): Promise<Option[]> => {
   }
 };
 
-const fetchProductOptions = async (url: string, query?: string): Promise<Option[]> => {
-    try {
-      const response = await axios.get<ProductResponse[]>(url, {
-        params: { q: query },
-      });
-      return response.data.map((item) => ({
-        label: item.title,
-        value: item.id,
-      }));
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      return [];
-    }
-  };
-
-
+const fetchProductOptions = async (
+  url: string,
+  query?: string
+): Promise<Option[]> => {
+  try {
+    const response = await axios.get<ProductResponse[]>(url, {
+      params: { 'user_id': query }, // クエリパラメータの変更も確認
+    });
+    return response.data.map((item) => ({
+      label: item.title, // titleを使用
+      value: item.id,
+    }));
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return [];
+  }
+};
 
 export const MultipleSearchAutocomplete = () => {
   const { control, handleSubmit } = useForm<FormValues>();
@@ -80,14 +78,18 @@ export const MultipleSearchAutocomplete = () => {
     if (value) {
       const filteredOptions = await fetchOptions("https://jsonplaceholder.typicode.com/users", value);
       setUserOptions(filteredOptions);
+    } else {
+      setUserOptions([]); // 入力がクリアされた場合にオプションをリセット
     }
   };
 
   // プロダクトが入力された時にAPIを呼び出す関数
   const handleProductInputChange = async (value: string) => {
     if (value) {
-      const filteredOptions = await fetchOptions("https://jsonplaceholder.typicode.com/posts", value);
+      const filteredOptions = await fetchProductOptions("https://jsonplaceholder.typicode.com/posts", value);
       setProductOptions(filteredOptions);
+    } else {
+      setProductOptions([]); // 入力がクリアされた場合にオプションをリセット
     }
   };
 
@@ -107,7 +109,10 @@ export const MultipleSearchAutocomplete = () => {
             {...field}
             sx={{ width: 300 }}
             options={userOptions}
-            getOptionLabel={(option) => option.label}
+            getOptionLabel={(option) => {
+              console.log("User Option:", option); // デバッグ用
+              return option?.label || ''; // ラベルが存在する場合に表示
+            }}
             onInputChange={(event, value) => handleUserInputChange(value)} // ユーザー入力時の処理
             renderInput={(params) => (
               <TextField
@@ -130,7 +135,10 @@ export const MultipleSearchAutocomplete = () => {
             {...field}
             sx={{ width: 300 }}
             options={productOptions}
-            getOptionLabel={(option) => option.label}
+            getOptionLabel={(option) => {
+              console.log("Product Option:", option); // デバッグ用
+              return option?.label || ''; // ラベルが存在する場合に表示
+            }}
             onInputChange={(event, value) => handleProductInputChange(value)} // プロダクト入力時の処理
             renderInput={(params) => (
               <TextField
