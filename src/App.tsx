@@ -1,10 +1,11 @@
 import "./App.css";
-import { SearchAutocomplete } from "./SearchComplete";
+import { MultipleSearchAutocomplete } from "./MultipleSearchAutocomplete"
+// import { SearchAutocomplete } from "./SearchComplete";
 
 function App() {
 	return (
 		<div>
-			<SearchAutocomplete />
+			<MultipleSearchAutocomplete />
 		</div>
 	)
 }
