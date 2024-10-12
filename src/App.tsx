@@ -1,13 +1,13 @@
 import "./App.css";
-import { MultipleSearchAutocomplete } from "./MultipleSearchAutocomplete"
+import { FormWithDependentSelects } from "./form/Form";
 // import { SearchAutocomplete } from "./SearchComplete";
 
 function App() {
 	return (
 		<div>
-			<MultipleSearchAutocomplete />
+			<FormWithDependentSelects />
 		</div>
-	)
+	);
 }
 
 export default App;
