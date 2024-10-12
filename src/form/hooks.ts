@@ -1,5 +1,19 @@
+import axios from "axios";
 import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
+
+// カテゴリの型定義
+export interface Category {
+	id: number;
+	key: string;
+	name: string;
+}
+
+export interface SubCategory {
+	id: number;
+	key: string;
+	name: string;
+}
 
 export const useCategoryForm = () => {
 	const { control, watch, setValue } = useForm({
@@ -9,25 +23,27 @@ export const useCategoryForm = () => {
 		},
 	});
 
-	const [categories, setCategories] = useState([]);
-	const [subCategoryOptions, setSubCategoryOptions] = useState([]);
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>(
+		[],
+	);
 	const selectedCategory = watch("category");
 
 	// 大分類データの取得
 	const fetchCategories = useCallback(async () => {
-		const response = await fetch("http://localhost:3000/api/category");
-		const data = await response.json();
-		setCategories(data);
+		const response = await axios.get<Category[]>(
+			"http://localhost:3000/api/category",
+		);
+		setCategories(response.data);
 	}, []); // useCallbackでメモ化
 
 	// 小分類データの取得
 	const fetchSubCategories = useCallback(async (categoryId: number) => {
-		const response = await fetch(
+		const response = await axios.get<SubCategory[]>(
 			`http://localhost:3000/api/category/${categoryId}`,
 		);
-		const data = await response.json();
-		setSubCategoryOptions(data);
-	}, []); // useCallbackでメモ化
+		setSubCategoryOptions(response.data);
+	}, []);
 
 	// 初回レンダリング時に大分類を取得
 	useEffect(() => {
