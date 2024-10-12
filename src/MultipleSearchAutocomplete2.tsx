@@ -4,7 +4,7 @@ import { TextField, Autocomplete } from "@mui/material";
 import axios from "axios";
 
 type FormValues = {
-	user: { hashId: string; label: string; value: number };
+	user: { label: string; value: number };
 	product: { label: string; value: number };
 };
 
@@ -22,9 +22,7 @@ const fetchOptions = async <
 	labelKey: keyof T = "name", // デフォルトを "name" に設定
 ): Promise<Option[]> => {
 	try {
-		const response = await axios.get<T[]>(url, {
-			params: query ? { userId: query } : {},
-		});
+		const response = await axios.get<T[]>(url, { params: { q: query } });
 		return response.data.map((item) => ({
 			label: String(item[labelKey]),
 			value: item.id,
@@ -57,19 +55,22 @@ const SearchAutocomplete = ({
 				{...field}
 				sx={{ width: 300 }}
 				options={options}
-				getOptionLabel={(option) => option?.label || ""}
-				onInputChange={(event, value) => onInputChange(value)}
+				getOptionLabel={(option) => option?.label || ""} // オプションのラベルを取得
+				onInputChange={(event, value) => onInputChange(value)} // ユーザー入力時の処理
 				renderInput={(params) => (
 					<TextField {...params} label={label} variant="outlined" />
 				)}
-				onChange={(event, value) => field.onChange(value)}
+				onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
+				clearOnEscape // Escapeキーでクリア可能
+				clearText="クリア" // バツボタンのラベルを設定
 			/>
 		)}
 	/>
 );
 
-export const MultipleSearchAutocomplete = () => {
-	const { control, watch } = useForm<FormValues>();
+export const MultipleSearchAutocomplete2 = () => {
+	const { control } = useForm<FormValues>();
+
 	const [userOptions, setUserOptions] = useState<Option[]>([]);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 
@@ -79,7 +80,13 @@ export const MultipleSearchAutocomplete = () => {
 			const initialUserOptions = await fetchOptions(
 				"https://jsonplaceholder.typicode.com/users",
 			);
+			const initialProductOptions = await fetchOptions(
+				"https://jsonplaceholder.typicode.com/posts",
+				undefined,
+				"title",
+			);
 			setUserOptions(initialUserOptions);
+			setProductOptions(initialProductOptions);
 		};
 		loadInitialOptions();
 	}, []);
@@ -88,25 +95,9 @@ export const MultipleSearchAutocomplete = () => {
 	const handleUserInputChange = async (value: string) => {
 		const filteredOptions = value
 			? await fetchOptions("https://jsonplaceholder.typicode.com/users", value)
-			: [];
+			: await fetchOptions("https://jsonplaceholder.typicode.com/users"); // クリア時に全ユーザーを表示
 		setUserOptions(filteredOptions);
 	};
-
-	// User選択時の処理。選択されたuserIdを元にpostsを取得する
-	const selectedUser = watch("user");
-	useEffect(() => {
-		const fetchProductOptionsForUser = async () => {
-			if (selectedUser?.value) {
-				const postsForUser = await fetchOptions(
-					"https://jsonplaceholder.typicode.com/posts",
-					String(selectedUser.value), // 選択されたuserIdをクエリパラメータに設定
-					"title",
-				);
-				setProductOptions(postsForUser); // 取得したpostsをproductの選択肢として設定
-			}
-		};
-		fetchProductOptionsForUser();
-	}, [selectedUser]); // userが選択されたらAPIを再度叩く
 
 	// プロダクト検索用の入力処理
 	const handleProductInputChange = async (value: string) => {
@@ -116,7 +107,11 @@ export const MultipleSearchAutocomplete = () => {
 					value,
 					"title",
 				)
-			: [];
+			: await fetchOptions(
+					"https://jsonplaceholder.typicode.com/posts",
+					undefined,
+					"title",
+				); // クリア時に全プロダクトを表示
 		setProductOptions(filteredOptions);
 	};
 
