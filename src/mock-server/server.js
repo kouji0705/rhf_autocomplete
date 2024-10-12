@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 const app = express();
 app.use(cors());
-const port = 4000;
+const port = 3000;
 
 const categories = [
 	{ id: 1, key: "food", name: "食べ物" },

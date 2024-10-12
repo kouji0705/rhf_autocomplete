@@ -1,7 +1,5 @@
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { categories } from "./const";
-import { useEffect } from "react";
-import type { CategoryKey } from "./type";
 
 export const useCategoryForm = () => {
 	const { control, watch, setValue } = useForm({
@@ -11,24 +9,43 @@ export const useCategoryForm = () => {
 		},
 	});
 
-	// 大分類をwatchで監視
-	const selectedCategory = watch("category") as CategoryKey | ""; // 型アサーションでCategoryKeyにキャスト
+	const [categories, setCategories] = useState([]);
+	const [subCategoryOptions, setSubCategoryOptions] = useState([]);
+	const selectedCategory = watch("category");
 
-	// 大分類が変更されたときに、小分類をリセット
+	// 大分類データの取得
+	const fetchCategories = useCallback(async () => {
+		const response = await fetch("http://localhost:3000/api/category");
+		const data = await response.json();
+		setCategories(data);
+	}, []); // useCallbackでメモ化
+
+	// 小分類データの取得
+	const fetchSubCategories = useCallback(async (categoryId: number) => {
+		const response = await fetch(
+			`http://localhost:3000/api/category/${categoryId}`,
+		);
+		const data = await response.json();
+		setSubCategoryOptions(data);
+	}, []); // useCallbackでメモ化
+
+	// 初回レンダリング時に大分類を取得
+	useEffect(() => {
+		fetchCategories();
+	}, [fetchCategories]); // 依存配列にfetchCategoriesを追加
+
+	// 大分類が変更されたときに小分類を取得
 	useEffect(() => {
 		if (selectedCategory) {
+			fetchSubCategories(Number(selectedCategory));
 			setValue("subCategory", ""); // 小分類をリセット
 		}
-	}, [selectedCategory, setValue]);
-
-	// 小分類の選択肢を動的に生成
-	const subCategoryOptions = selectedCategory
-		? categories[selectedCategory]
-		: [];
+	}, [selectedCategory, fetchSubCategories, setValue]); // fetchSubCategoriesを依存配列に追加
 
 	return {
 		control,
-		selectedCategory,
+		categories,
 		subCategoryOptions,
+		selectedCategory,
 	};
 };
