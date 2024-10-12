@@ -28,10 +28,14 @@ const subCategories = {
 	],
 };
 
+// 大分類を検索するAPI
 app.get("/api/category", (req, res) => {
-	res.json(categories);
+	const searchName = req.query.searchName || ""; // クエリパラメータを取得
+	const filteredCategories = categories.filter(
+		(category) => category.name.includes(searchName), // 名前にsearchNameが含まれるかでフィルタリング
+	);
+	res.json(filteredCategories);
 });
-
 app.get("/api/category/:id", (req, res) => {
 	const subCategory = subCategories[req.params.id];
 	if (subCategory) {
