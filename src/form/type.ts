@@ -1,4 +1,12 @@
-import type { categories } from "./const";
+// カテゴリの型定義
+export interface Category {
+	id: number;
+	key: string;
+	name: string;
+}
 
-// 大分類と小分類のデータ
-export type CategoryKey = keyof typeof categories;
+export interface SubCategory {
+	id: number;
+	key: string;
+	name: string;
+}

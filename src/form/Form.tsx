@@ -4,7 +4,8 @@ import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { useCategoryForm } from "./hooks";
 
 export const FormWithDependentSelects: React.FC = () => {
-	const { control, subCategoryOptions, selectedCategory } = useCategoryForm();
+	const { control, categories, subCategoryOptions, selectedCategory } =
+		useCategoryForm();
 
 	return (
 		<form>
@@ -19,9 +20,11 @@ export const FormWithDependentSelects: React.FC = () => {
 							<MenuItem value="">
 								<em>選択してください</em>
 							</MenuItem>
-							<MenuItem value="food">食べ物</MenuItem>
-							<MenuItem value="animal">動物</MenuItem>
-							<MenuItem value="vehicle">乗り物</MenuItem>
+							{categories.map((category) => (
+								<MenuItem key={category.id} value={category.id}>
+									{category.name}
+								</MenuItem>
+							))}
 						</Select>
 					)}
 				/>
@@ -44,8 +47,8 @@ export const FormWithDependentSelects: React.FC = () => {
 								<em>選択してください</em>
 							</MenuItem>
 							{subCategoryOptions.map((subCategory) => (
-								<MenuItem key={subCategory} value={subCategory}>
-									{subCategory}
+								<MenuItem key={subCategory.id} value={subCategory.id}>
+									{subCategory.name}
 								</MenuItem>
 							))}
 						</Select>
