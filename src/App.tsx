@@ -1,11 +1,12 @@
-import "./App.css";
-import { FormWithDependentSelects } from "./form/Form";
 // import { SearchAutocomplete } from "./SearchComplete";
+
+import { CategoryFormWithSearch } from "./form/FormWithDependentAutoComplete";
 
 function App() {
 	return (
 		<div>
-			<FormWithDependentSelects />
+			{/* <FormWithDependentSelects /> */}
+			<CategoryFormWithSearch />
 			{/* <CategoryForm /> */}
 		</div>
 	);
