@@ -1,39 +1,10 @@
 import type React from "react";
-import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
-
-// 大分類と小分類のデータ
-const categories = {
-	food: ["りんご", "バナナ", "オレンジ"],
-	animal: ["犬", "猫", "鳥"],
-	vehicle: ["車", "自転車", "飛行機"],
-} as const;
-
-type CategoryKey = keyof typeof categories;
+import { useCategoryForm } from "./hooks";
 
 export const FormWithDependentSelects: React.FC = () => {
-	const { control, watch, setValue } = useForm({
-		defaultValues: {
-			category: "",
-			subCategory: "",
-		},
-	});
-
-	// 大分類をwatchで監視
-	const selectedCategory = watch("category") as CategoryKey | ""; // 型アサーションでCategoryKeyにキャスト
-
-	// 大分類が変更されたときに、小分類をリセット
-	useEffect(() => {
-		if (selectedCategory) {
-			setValue("subCategory", ""); // 小分類をリセット
-		}
-	}, [selectedCategory, setValue]);
-
-	// 小分類の選択肢を動的に生成
-	const subCategoryOptions = selectedCategory
-		? categories[selectedCategory]
-		: [];
+	const { control, subCategoryOptions, selectedCategory } = useCategoryForm();
 
 	return (
 		<form>

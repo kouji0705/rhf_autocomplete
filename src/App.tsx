@@ -1,5 +1,5 @@
 import "./App.css";
-import { FormWithDependentSelects } from "./Form";
+import { FormWithDependentSelects } from "./form/Form";
 // import { SearchAutocomplete } from "./SearchComplete";
 
 function App() {
