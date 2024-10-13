@@ -1,81 +1,105 @@
-import type React from "react";
-import { useEffect, useState, useCallback } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Autocomplete, TextField, FormControl } from "@mui/material";
+import React, { Suspense, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { TextField, Autocomplete } from "@mui/material";
 import axios from "axios";
 
-interface Category {
+// APIレスポンスの型定義
+interface UserResponse {
 	id: number;
 	name: string;
 }
 
-interface FormValues {
-	categoryId: number | null; // id を保存するフィールド
-}
+type Option = {
+	label: string;
+	value: number;
+};
 
-export const CategoryFormWithSearch: React.FC = () => {
-	const { control } = useForm<FormValues>({
-		defaultValues: {
-			categoryId: null, // 初期値は null
+type FormValues = {
+	user: { label: string; value: number };
+};
+
+// 非同期データ取得ロジック
+const fetchUserOptions = async (query?: string): Promise<Option[]> => {
+	const response = await axios.get<UserResponse[]>(
+		"https://jsonplaceholder.typicode.com/users",
+		{
+			params: { q: query },
 		},
-	});
+	);
+	return response.data.map((item) => ({
+		label: item.name,
+		value: item.id,
+	}));
+};
 
-	const [categories, setCategories] = useState<Category[]>([]); // プルダウンの選択肢
-	const [inputValue, setInputValue] = useState(""); // 入力された検索値
+// データを読み込んでキャッシュする関数
+const userOptionsCache: {
+	promise: Promise<Option[]> | null;
+	data: Option[] | null;
+} = {
+	promise: null,
+	data: null,
+};
 
-	// APIから大分類データを取得する関数
-	const fetchCategories = useCallback(async (searchName: string) => {
-		try {
-			const response = await axios.get<Category[]>(
-				"http://localhost:3000/api/category",
-				{
-					params: { searchName }, // 検索クエリをAPIに送信
-				},
-			);
-			setCategories(response.data); // 取得したデータをセット
-		} catch (error) {
-			console.error("Error fetching categories:", error);
+const loadUserOptions = () => {
+	if (!userOptionsCache.promise) {
+		userOptionsCache.promise = fetchUserOptions().then((data) => {
+			userOptionsCache.data = data;
+		});
+	}
+	if (userOptionsCache.data) {
+		return userOptionsCache.data;
+	}
+	throw userOptionsCache.promise; // Suspenseで待機対象にする
+};
+
+// Suspenseで使うローディングコンポーネント
+const Loading = () => <div>Loading...</div>;
+
+// ユーザー検索のためのAutocompleteコンポーネント
+const SearchAutocompleteComponent = () => {
+	const { control, handleSubmit } = useForm<FormValues>();
+	const options = loadUserOptions(); // 初回に全ユーザーを取得
+
+	const handleInputChange = async (value: string) => {
+		if (value) {
+			const filteredOptions = await fetchUserOptions(value);
+			userOptionsCache.data = filteredOptions; // キャッシュを更新
 		}
-	}, []);
+	};
 
-	// コンポーネントの初回レンダリング時に全ての大分類を取得
-	useEffect(() => {
-		fetchCategories(""); // 初回は検索クエリなしで全件取得
-	}, [fetchCategories]);
+	const onSubmit = (data: FormValues) => {
+		console.log("選択されたデータ:", data);
+	};
 
 	return (
-		<form>
-			<FormControl fullWidth>
-				<Controller
-					name="categoryId" // フォームにidを保持
-					control={control}
-					render={({ field }) => (
-						<Autocomplete
-							options={categories} // APIから取得した選択肢
-							getOptionLabel={(option) => option.name} // 表示は name
-							value={
-								categories.find((category) => category.id === field.value) ||
-								null
-							} // idに基づいて選択されたオプションを表示
-							onChange={(_, newValue) => {
-								field.onChange(newValue ? newValue.id : null); // idをフォームにセット
-							}}
-							inputValue={inputValue} // 検索用の入力値
-							onInputChange={(_, newInputValue) => {
-								setInputValue(newInputValue);
-								if (newInputValue === "") {
-									field.onChange(null); // 文字が空になったら選択をクリア
-									fetchCategories(""); // クリア後、全件取得を呼び出す
-								}
-							}}
-							renderInput={(params) => (
-								<TextField {...params} label="大分類を検索" />
-							)}
-							sx={{ width: 300 }}
-						/>
-					)}
-				/>
-			</FormControl>
+		<form onSubmit={handleSubmit(onSubmit)}>
+			<Controller
+				name="user"
+				control={control}
+				render={({ field }) => (
+					<Autocomplete
+						{...field}
+						sx={{ width: 300 }}
+						options={options}
+						getOptionLabel={(option) => option.label}
+						onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時にAPIを呼び出し
+						renderInput={(params) => (
+							<TextField {...params} label="ユーザー検索" variant="outlined" />
+						)}
+						onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
+					/>
+				)}
+			/>
 		</form>
+	);
+};
+
+// Suspenseを利用してデータを取得してから表示
+export const SearchAutocomplete = () => {
+	return (
+		<Suspense fallback={<Loading />}>
+			<SearchAutocompleteComponent />
+		</Suspense>
 	);
 };
