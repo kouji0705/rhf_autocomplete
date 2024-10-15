@@ -20,9 +20,6 @@ export const useCategoryForm = () => {
 	// 大分類データの取得
 	const fetchCategories = useCallback(async () => {
 		const response = await getCategories();
-		// const response = await axios.get<Category[]>(
-		// 	"http://localhost:3000/api/category",
-		// );
 		setCategories(response);
 	}, []); // useCallbackでメモ化
 
