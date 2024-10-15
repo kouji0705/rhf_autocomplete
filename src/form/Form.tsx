@@ -44,9 +44,7 @@ export const SearchAutocomplete = () => {
 						loading={isCategoryLoading}
 						value={field.value}
 						onChange={(event, value) => {
-							field.onChange(value); // 親カテゴリー選択時にフィールドを更新
-
-							// 親カテゴリーが変更された場合、小分類をリセット
+							field.onChange(value);
 							setValue("subCategory", null);
 						}}
 						renderInput={(params) => (
