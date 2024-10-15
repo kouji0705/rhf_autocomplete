@@ -1,36 +1,27 @@
 import axios from "axios";
-import type {
-	Category,
-	PullDownOption,
-	SubCategory,
-	UserResponse,
-} from "./type";
+import type { Category } from "./type";
 
-const baseUrl = "http://localhost:3000/api";
+export const apiClient = axios.create({
+	baseURL: "http://localhost:3000", // 共通のBaseURL
+});
 
-export const getCategories = async () => {
-	const response = await axios.get<Category[]>(`${baseUrl}/category`);
-	return response.data;
+// APIからカテゴリリストを取得する関数
+export const fetchCategories = async (
+	searchName?: string,
+): Promise<Category[]> => {
+	const response = await apiClient.get("/api/category", {
+		params: { searchName }, // searchNameクエリパラメータをAPIに送る
+	});
+	return response.data; // APIから取得したデータをそのまま返す
 };
 
-export const getSubCategories = async (categoryId: number) => {
-	const response = await axios.get<SubCategory[]>(
-		`${baseUrl}/category/${categoryId}`,
-	);
+// APIからサブカテゴリリストを取得する関数
+export const fetchSubCategories = async (
+	categoryId: number,
+	searchName?: string,
+): Promise<Category[]> => {
+	const response = await apiClient.get(`/api/category/${categoryId}`, {
+		params: { searchName }, // searchNameクエリパラメータとして渡す
+	});
 	return response.data;
-};
-
-export const fetchUserOptions = async (
-	query?: string,
-): Promise<PullDownOption[]> => {
-	const response = await axios.get<UserResponse[]>(
-		"https://jsonplaceholder.typicode.com/users",
-		{
-			params: { q: query },
-		},
-	);
-	return response.data.map((item) => ({
-		label: item.name,
-		value: item.id,
-	}));
 };

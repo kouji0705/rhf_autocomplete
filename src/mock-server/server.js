@@ -37,9 +37,14 @@ app.get("/api/category", (req, res) => {
 	res.json(filteredCategories);
 });
 app.get("/api/category/:id", (req, res) => {
+	const searchName = req.query.searchName || ""; // クエリパラメータを取得
 	const subCategory = subCategories[req.params.id];
+
 	if (subCategory) {
-		res.json(subCategory);
+		const filteredSubCategories = subCategory.filter(
+			(item) => item.name.includes(searchName), // 名前にsearchNameが含まれるかでフィルタリング
+		);
+		res.json(filteredSubCategories);
 	} else {
 		res.status(404).send("Not found");
 	}

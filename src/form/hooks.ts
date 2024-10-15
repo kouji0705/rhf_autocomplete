@@ -1,92 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
-import { useForm } from "react-hook-form";
-import type { SubCategory } from "./type";
-import { getCategories, getSubCategories } from "./api";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-
-export const useCategoryForm = () => {
-	const { control, watch, setValue } = useForm({
-		defaultValues: {
-			category: "",
-			subCategory: "",
-		},
-	});
-
-	const [categories, setCategories] = useState<Category[]>([]);
-	const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>(
-		[],
-	);
-	const selectedCategory = watch("category");
-
-	// 大分類データの取得
-	const fetchCategories = useCallback(async () => {
-		const response = await getCategories();
-		setCategories(response);
-	}, []); // useCallbackでメモ化
-
-	// 小分類データの取得
-	const fetchSubCategories = useCallback(async (categoryId: number) => {
-		const response = await getSubCategories(categoryId);
-		setSubCategoryOptions(response);
-	}, []);
-
-	// 初回レンダリング時に大分類を取得
-	useEffect(() => {
-		fetchCategories();
-	}, [fetchCategories]); // 依存配列にfetchCategoriesを追加
-
-	// 大分類が変更されたときに小分類を取得
-	useEffect(() => {
-		if (selectedCategory) {
-			fetchSubCategories(Number(selectedCategory));
-			setValue("subCategory", ""); // 小分類をリセット
-		}
-	}, [selectedCategory, fetchSubCategories, setValue]); // fetchSubCategoriesを依存配列に追加
-
-	return {
-		control,
-		categories,
-		subCategoryOptions,
-		selectedCategory,
-	};
-};
-
-// // カスタムフック: ユーザーのオプションを取得
-// export const useUserOptions = (searchQuery: string) => {
-// 	return useQuery({
-// 		queryKey: ["users", searchQuery], // クエリキーを渡す
-// 		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
-// 	});
-// };
-
-// const fetchCategories = async (
-// 	searchName?: string,
-// ): Promise<PullDownOption[]> => {
-// 	const response = await axios.get("/api/category", {
-// 		params: { searchName }, // searchNameクエリパラメータをAPIに送る
-// 	});
-// 	return response.data.map((item: { id: number; name: string }) => ({
-// 		label: item.name,
-// 		value: item.id,
-// 	}));
-// };
-
-type Category = {
-	id: number;
-	key: string;
-	name: string;
-};
-
-const baseURL = "http://localhost:3000";
-
-// APIからカテゴリリストを取得する関数
-const fetchCategories = async (searchName?: string): Promise<Category[]> => {
-	const response = await axios.get(`${baseURL}/api/category`, {
-		params: { searchName }, // searchNameクエリパラメータをAPIに送る
-	});
-	return response.data; // APIから取得したデータをそのまま返す
-};
+import { fetchCategories, fetchSubCategories } from "./api";
+import type { FormValues } from "./type";
+import { useForm } from "react-hook-form";
 
 // カスタムフック: カテゴリのオプションを取得
 export const useCategoryOptions = (searchName: string) => {
@@ -97,22 +12,52 @@ export const useCategoryOptions = (searchName: string) => {
 	});
 };
 
-// APIからサブカテゴリリストを取得する関数
-const fetchSubCategories = async (categoryId: number): Promise<Category[]> => {
-	const response = await axios.get(`${baseURL}/api/category/${categoryId}`);
-	return response.data;
-};
-
 // サブカテゴリのオプションを取得するカスタムフック
-export const useSubCategoryOptions = (categoryId: number | null) => {
+export const useSubCategoryOptions = (
+	categoryId: number | null,
+	searchName: string,
+) => {
 	return useQuery({
-		queryKey: ["subCategories", categoryId], // クエリキーをcategoryIdに基づいて設定
+		queryKey: ["subCategories", categoryId, searchName], // categoryIdとsearchNameに基づいてクエリを実行
 		queryFn: () => {
 			if (categoryId === null) {
 				return Promise.resolve([]); // categoryIdがnullの場合は空配列を返す
 			}
-			return fetchSubCategories(categoryId); // categoryIdがnullでない場合はAPIを呼ぶ
+			return fetchSubCategories(categoryId, searchName); // サブカテゴリーのAPI呼び出し
 		},
-		enabled: categoryId !== null, // categoryIdがnullでない場合のみ実行
+		enabled: !!categoryId, // categoryIdがnullでない場合のみ実行
 	});
+};
+
+export const useSearchAutocomplete = () => {
+	const { control, watch, setValue } = useForm<FormValues>({
+		defaultValues: {
+			category: null,
+			subCategory: null,
+		},
+	});
+
+	// 親カテゴリーの監視
+	const selectedCategory = watch("category");
+	const categoryId = selectedCategory?.id || null;
+
+	// 親カテゴリーの検索に基づくオプションを取得
+	const { data: categoryOptions = [], isLoading: isCategoryLoading } =
+		useCategoryOptions(selectedCategory?.name || "");
+
+	// サブカテゴリー検索のための監視
+	const subCategorySearchName = watch("subCategory")?.name || "";
+
+	// サブカテゴリーのオプションを取得
+	const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
+		useSubCategoryOptions(categoryId, subCategorySearchName);
+
+	return {
+		control,
+		categoryOptions,
+		isCategoryLoading,
+		subCategoryOptions,
+		isSubCategoryLoading,
+		setValue,
+	};
 };

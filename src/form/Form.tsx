@@ -1,37 +1,20 @@
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
-import { useCategoryOptions, useSubCategoryOptions } from "./hooks";
-import type { FormValues, Category } from "./type";
+import { useSearchAutocomplete } from "./hooks";
+import type { Category } from "./type";
 
 // ユーザー検索のためのAutocompleteコンポーネント
 export const SearchAutocomplete = () => {
-	const { control, handleSubmit, watch } = useForm<FormValues>({
-		defaultValues: {
-			category: null,
-			subCategory: null,
-		},
-	});
-
-	// 親カテゴリーの監視
-	const selectedCategory = watch("category"); // カテゴリーの選択を監視
-	const categoryId = selectedCategory?.id || null;
-
-	// 親カテゴリーの検索に基づくオプションを取得
-	const { data: categoryOptions = [], isLoading: isCategoryLoading } =
-		useCategoryOptions(watch("category")?.name || "");
-
-	// サブカテゴリーのオプションを取得
-	const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
-		useSubCategoryOptions(categoryId);
-
-	// フォームの送信処理
-	const onSubmit = (data: FormValues) => {
-		console.log("選択されたデータ:", data);
-	};
-
+	const {
+		control,
+		categoryOptions,
+		isCategoryLoading,
+		subCategoryOptions,
+		isSubCategoryLoading,
+		setValue,
+	} = useSearchAutocomplete();
 	return (
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<form>
 			{/* 親カテゴリーのAutocomplete */}
 			<Controller
 				name="category"
@@ -44,7 +27,10 @@ export const SearchAutocomplete = () => {
 						getOptionLabel={(option: Category) => option.name} // nameフィールドを表示
 						loading={isCategoryLoading}
 						value={field.value}
-						onChange={(event, value) => field.onChange(value)} // 親カテゴリー選択時にフィールドを更新
+						onChange={(event, value) => {
+							field.onChange(value); // 親カテゴリー選択時にフィールドを更新
+							setValue("subCategory", null); // 親カテゴリー変更時にサブカテゴリーをリセット
+						}}
 						renderInput={(params) => (
 							<TextField
 								{...params}
@@ -71,6 +57,15 @@ export const SearchAutocomplete = () => {
 						getOptionLabel={(option: Category) => option.name} // nameフィールドを表示
 						loading={isSubCategoryLoading}
 						value={field.value}
+						onInputChange={(event, value) => {
+							if (field.value) {
+								setValue("subCategory", {
+									...field.value,
+									name: value,
+									id: field.value.id ?? 0,
+								});
+							}
+						}} // サブカテゴリーの入力変更時にsearchNameを更新
 						onChange={(event, value) => field.onChange(value)} // サブカテゴリー選択時にフィールドを更新
 						renderInput={(params) => (
 							<TextField
