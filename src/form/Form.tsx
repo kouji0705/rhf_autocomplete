@@ -24,14 +24,6 @@ export const SearchAutocomplete = ({
 	isSubCategoryLoading,
 	setValue,
 }: Props) => {
-	// const {
-	// 	control,
-	// 	categoryOptions,
-	// 	isCategoryLoading,
-	// 	subCategoryOptions,
-	// 	isSubCategoryLoading,
-	// 	setValue,
-	// } = useSearchAutocomplete();
 	return (
 		<form>
 			{/* 親カテゴリーのAutocomplete */}

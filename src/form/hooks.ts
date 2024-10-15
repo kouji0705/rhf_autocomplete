@@ -30,7 +30,12 @@ export const useSubCategoryOptions = (
 };
 
 export const useSearchAutocomplete = () => {
-	const { control, watch, setValue } = useForm<FormValues>({
+	const {
+		control,
+		watch,
+		setValue,
+		formState: { dirtyFields },
+	} = useForm<FormValues>({
 		defaultValues: {
 			category: null,
 			subCategory: null,
@@ -52,6 +57,14 @@ export const useSearchAutocomplete = () => {
 	const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
 		useSubCategoryOptions(categoryId, subCategorySearchName);
 
+	const onSubmit = () => {
+		console.log("onSubmit", dirtyFields);
+	};
+
+	const onCancel = () => {
+		console.log("onCancel");
+	};
+
 	return {
 		control,
 		categoryOptions,
@@ -59,5 +72,8 @@ export const useSearchAutocomplete = () => {
 		subCategoryOptions,
 		isSubCategoryLoading,
 		setValue,
+		dirtyFields,
+		onSubmit,
+		onCancel,
 	};
 };
