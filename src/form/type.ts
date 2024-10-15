@@ -1,9 +1,4 @@
 // カテゴリの型定義
-export interface Category {
-	id: number;
-	key: string;
-	name: string;
-}
 
 export interface SubCategory {
 	id: number;
@@ -21,6 +16,18 @@ export type PullDownOption = {
 	value: number;
 };
 
+// export type FormValues = {
+// 	user: { label: string; value: number } | null;
+// };
+
+// Category型
+export type Category = {
+	id: number;
+	key: string;
+	name: string;
+};
+
+// FormValuesの型定義
 export type FormValues = {
-	user: { label: string; value: number } | null;
+	user: Category | null; // userはCategory型またはnull
 };
