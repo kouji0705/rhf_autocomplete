@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
 import { useCategoryOptions, useSubCategoryOptions } from "./hooks";
@@ -6,7 +5,7 @@ import type { FormValues, Category } from "./type";
 
 // ユーザー検索のためのAutocompleteコンポーネント
 export const SearchAutocomplete = () => {
-	const { control, handleSubmit, watch } = useForm<FormValues>({
+	const { control, handleSubmit, watch, setValue } = useForm<FormValues>({
 		defaultValues: {
 			category: null,
 			subCategory: null,
@@ -44,7 +43,12 @@ export const SearchAutocomplete = () => {
 						getOptionLabel={(option: Category) => option.name} // nameフィールドを表示
 						loading={isCategoryLoading}
 						value={field.value}
-						onChange={(event, value) => field.onChange(value)} // 親カテゴリー選択時にフィールドを更新
+						onChange={(event, value) => {
+							field.onChange(value); // 親カテゴリー選択時にフィールドを更新
+
+							// 親カテゴリーが変更された場合、小分類をリセット
+							setValue("subCategory", null);
+						}}
 						renderInput={(params) => (
 							<TextField
 								{...params}
