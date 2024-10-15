@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
 import axios from "axios";
+import {
+	useQuery,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
+
+// クエリクライアントの初期化
+const queryClient = new QueryClient();
 
 // APIレスポンスの型定義
 interface UserResponse {
@@ -18,7 +26,7 @@ type FormValues = {
 	user: { label: string; value: number } | null;
 };
 
-// 非同期データ取得ロジック
+// APIからユーザーリストを取得する関数
 const fetchUserOptions = async (query?: string): Promise<Option[]> => {
 	const response = await axios.get<UserResponse[]>(
 		"https://jsonplaceholder.typicode.com/users",
@@ -33,34 +41,24 @@ const fetchUserOptions = async (query?: string): Promise<Option[]> => {
 };
 
 // ユーザー検索のためのAutocompleteコンポーネント
-export const SearchAutocomplete = () => {
+export const SearchAutocompleteComponent = () => {
 	const { control, handleSubmit } = useForm<FormValues>({
 		defaultValues: {
 			user: null,
 		},
 	});
-	const [options, setOptions] = useState<Option[]>([]);
-	const [loading, setLoading] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 
-	// 初回に全ユーザーをロードするためのuseEffect
-	useEffect(() => {
-		const loadInitialOptions = async () => {
-			setLoading(true);
-			const initialOptions = await fetchUserOptions(); // 初回に全ユーザーを取得
-			setOptions(initialOptions);
-			setLoading(false);
-		};
-		loadInitialOptions(); // 初回ロード時にAPIを呼び出す
-	}, []);
+	// 初期ロードまたは検索結果を取得するためのクエリ
+	const { data: options = [], isLoading } = useQuery({
+		queryKey: ["users", searchQuery], // クエリキーをオブジェクトで渡す
+		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
+		enabled: searchQuery.length > 0, // 検索クエリがあるときのみ実行
+	});
 
 	// ユーザーが入力した際にAPIを呼び出す関数
-	const handleInputChange = async (value: string) => {
-		if (value) {
-			setLoading(true);
-			const filteredOptions = await fetchUserOptions(value);
-			setOptions(filteredOptions);
-			setLoading(false);
-		}
+	const handleInputChange = (value: string) => {
+		setSearchQuery(value); // 検索クエリを更新し、クエリを再実行
 	};
 
 	// フォームの送信処理
@@ -79,7 +77,7 @@ export const SearchAutocomplete = () => {
 						sx={{ width: 300 }}
 						options={options}
 						getOptionLabel={(option) => option.label}
-						loading={loading}
+						loading={isLoading}
 						onInputChange={(event, value) => handleInputChange(value)} // ユーザー入力時にAPIを呼び出し
 						renderInput={(params) => (
 							<TextField
@@ -88,6 +86,12 @@ export const SearchAutocomplete = () => {
 								variant="outlined"
 								InputProps={{
 									...params.InputProps,
+									endAdornment: (
+										<>
+											{isLoading ? <div>Loading...</div> : null}
+											{params.InputProps.endAdornment}
+										</>
+									),
 								}}
 							/>
 						)}
@@ -96,5 +100,14 @@ export const SearchAutocomplete = () => {
 				)}
 			/>
 		</form>
+	);
+};
+
+// QueryClientProviderでアプリ全体にクエリクライアントを提供
+export const SearchAutocomplete = () => {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<SearchAutocompleteComponent />
+		</QueryClientProvider>
 	);
 };

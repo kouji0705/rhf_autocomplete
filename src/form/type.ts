@@ -10,3 +10,13 @@ export interface SubCategory {
 	key: string;
 	name: string;
 }
+
+export interface UserResponse {
+	id: number;
+	name: string;
+}
+
+export type PullDownOption = {
+	label: string;
+	value: number;
+};

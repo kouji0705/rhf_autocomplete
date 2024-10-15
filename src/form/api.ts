@@ -14,3 +14,17 @@ export const getSubCategories = async (categoryId: number) => {
 	);
 	return response.data;
 };
+
+// 非同期データ取得ロジック
+export const fetchUserOptions = async (query?: string): Promise<Option[]> => {
+	const response = await axios.get<UserResponse[]>(
+		"https://jsonplaceholder.typicode.com/users",
+		{
+			params: { q: query },
+		},
+	);
+	return response.data.map((item) => ({
+		label: item.name,
+		value: item.id,
+	}));
+};
