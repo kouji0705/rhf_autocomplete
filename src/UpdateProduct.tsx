@@ -17,7 +17,7 @@ export const UpdateProduct = () => {
 
 	return (
 		<div>
-			UpdateProduct
+			<h1>UpdateProduct</h1>
 			<SearchAutocomplete
 				control={control}
 				categoryOptions={categoryOptions}

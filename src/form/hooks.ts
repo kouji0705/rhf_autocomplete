@@ -35,6 +35,7 @@ export const useSearchAutocomplete = () => {
 		watch,
 		setValue,
 		formState: { dirtyFields },
+		reset,
 	} = useForm<FormValues>({
 		defaultValues: {
 			category: null,
@@ -62,7 +63,7 @@ export const useSearchAutocomplete = () => {
 	};
 
 	const onCancel = () => {
-		console.log("onCancel");
+		reset(); // フォームの値を初期値にリセット
 	};
 
 	return {
