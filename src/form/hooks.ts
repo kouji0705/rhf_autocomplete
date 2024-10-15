@@ -99,7 +99,7 @@ export const useCategoryOptions = (searchName: string) => {
 
 // APIからサブカテゴリリストを取得する関数
 const fetchSubCategories = async (categoryId: number): Promise<Category[]> => {
-	const response = await axios.get(`/api/category/${categoryId}`);
+	const response = await axios.get(`${baseURL}/api/category/${categoryId}`);
 	return response.data;
 };
 
