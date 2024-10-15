@@ -98,21 +98,29 @@ export const useCategoryOptions = (searchName: string) => {
 };
 
 // APIからサブカテゴリリストを取得する関数
-const fetchSubCategories = async (categoryId: number): Promise<Category[]> => {
-	const response = await axios.get(`${baseURL}/api/category/${categoryId}`);
+// APIからサブカテゴリリストを取得する関数
+const fetchSubCategories = async (
+	categoryId: number,
+	searchName?: string,
+): Promise<Category[]> => {
+	const response = await axios.get(`${baseURL}/api/category/${categoryId}`, {
+		params: { searchName }, // searchNameクエリパラメータとして渡す
+	});
 	return response.data;
 };
-
 // サブカテゴリのオプションを取得するカスタムフック
-export const useSubCategoryOptions = (categoryId: number | null) => {
+export const useSubCategoryOptions = (
+	categoryId: number | null,
+	searchName: string,
+) => {
 	return useQuery({
-		queryKey: ["subCategories", categoryId], // クエリキーをcategoryIdに基づいて設定
+		queryKey: ["subCategories", categoryId, searchName], // categoryIdとsearchNameに基づいてクエリを実行
 		queryFn: () => {
 			if (categoryId === null) {
 				return Promise.resolve([]); // categoryIdがnullの場合は空配列を返す
 			}
-			return fetchSubCategories(categoryId); // categoryIdがnullでない場合はAPIを呼ぶ
+			return fetchSubCategories(categoryId, searchName); // サブカテゴリーのAPI呼び出し
 		},
-		enabled: categoryId !== null, // categoryIdがnullでない場合のみ実行
+		enabled: !!categoryId, // categoryIdがnullでない場合のみ実行
 	});
 };
