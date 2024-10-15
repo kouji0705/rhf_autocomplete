@@ -44,7 +44,17 @@ const UpdateProductComponent = ({ product }: { product: Product }) => {
 					</ul>
 					<Button
 						onClick={onSubmit}
-						sx={{ width: 300, backgroundColor: "blue", color: "white" }}
+						disabled={Object.keys(dirtyFields).length === 0}
+						sx={{
+							width: 300,
+							backgroundColor:
+								Object.keys(dirtyFields).length === 0 ? "gray" : "blue", // disabledの時は灰色
+							color: "white",
+							"&:hover": {
+								backgroundColor:
+									Object.keys(dirtyFields).length === 0 ? "gray" : "darkblue", // hover時の色も設定
+							},
+						}}
 					>
 						保存
 					</Button>
