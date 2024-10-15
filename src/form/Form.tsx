@@ -1,18 +1,37 @@
-import { Controller } from "react-hook-form";
+import {
+	type Control,
+	Controller,
+	type UseFormSetValue,
+} from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
-import { useSearchAutocomplete } from "./hooks";
-import type { Category } from "./type";
+import type { Category, FormValues } from "./type";
+
+type Props = {
+	control: Control<FormValues, unknown>;
+	categoryOptions: Category[];
+	isCategoryLoading: boolean;
+	subCategoryOptions: Category[];
+	isSubCategoryLoading: boolean;
+	setValue: UseFormSetValue<FormValues>;
+};
 
 // ユーザー検索のためのAutocompleteコンポーネント
-export const SearchAutocomplete = () => {
-	const {
-		control,
-		categoryOptions,
-		isCategoryLoading,
-		subCategoryOptions,
-		isSubCategoryLoading,
-		setValue,
-	} = useSearchAutocomplete();
+export const SearchAutocomplete = ({
+	control,
+	categoryOptions,
+	isCategoryLoading,
+	subCategoryOptions,
+	isSubCategoryLoading,
+	setValue,
+}: Props) => {
+	// const {
+	// 	control,
+	// 	categoryOptions,
+	// 	isCategoryLoading,
+	// 	subCategoryOptions,
+	// 	isSubCategoryLoading,
+	// 	setValue,
+	// } = useSearchAutocomplete();
 	return (
 		<form>
 			{/* 親カテゴリーのAutocomplete */}
