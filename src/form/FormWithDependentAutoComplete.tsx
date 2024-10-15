@@ -53,7 +53,7 @@ export const SearchAutocompleteComponent = () => {
 	const { data: options = [], isLoading } = useQuery({
 		queryKey: ["users", searchQuery], // クエリキーをオブジェクトで渡す
 		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
-		enabled: searchQuery.length > 0, // 検索クエリがあるときのみ実行
+		enabled: true, // 検索クエリがあるときのみ実行
 	});
 
 	// ユーザーが入力した際にAPIを呼び出す関数
