@@ -1,22 +1,29 @@
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
-import { useUserOptions } from "./hooks";
-import type { FormValues } from "./type";
+import { useCategoryOptions, useSubCategoryOptions } from "./hooks";
+import type { FormValues, Category } from "./type";
 
 // ユーザー検索のためのAutocompleteコンポーネント
 export const SearchAutocomplete = () => {
 	const { control, handleSubmit, watch } = useForm<FormValues>({
 		defaultValues: {
-			user: null,
+			category: null,
+			subCategory: null,
 		},
 	});
 
-	// watchを使ってuserフィールドの値を監視
-	const searchQuery = watch("user")?.label || ""; // userのラベル（検索文字列）を取得
+	// 親カテゴリーの監視
+	const selectedCategory = watch("category"); // カテゴリーの選択を監視
+	const categoryId = selectedCategory?.id || null;
 
-	// カスタムフックを使ってクエリを実行
-	const { data: options = [], isLoading } = useUserOptions(searchQuery);
+	// 親カテゴリーの検索に基づくオプションを取得
+	const { data: categoryOptions = [], isLoading: isCategoryLoading } =
+		useCategoryOptions(watch("category")?.name || "");
+
+	// サブカテゴリーのオプションを取得
+	const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
+		useSubCategoryOptions(categoryId);
 
 	// フォームの送信処理
 	const onSubmit = (data: FormValues) => {
@@ -25,28 +32,56 @@ export const SearchAutocomplete = () => {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>
+			{/* 親カテゴリーのAutocomplete */}
 			<Controller
-				name="user"
+				name="category"
 				control={control}
 				render={({ field }) => (
 					<Autocomplete
 						{...field}
 						sx={{ width: 300 }}
-						options={options}
-						getOptionLabel={(option) => option.label}
-						loading={isLoading}
-						// onInputChangeの処理はwatchで代替されるので削除可能
+						options={categoryOptions}
+						getOptionLabel={(option: Category) => option.name} // nameフィールドを表示
+						loading={isCategoryLoading}
+						value={field.value}
+						onChange={(event, value) => field.onChange(value)} // 親カテゴリー選択時にフィールドを更新
 						renderInput={(params) => (
 							<TextField
 								{...params}
-								label="ユーザー検索"
+								label="親カテゴリー検索"
 								variant="outlined"
 								InputProps={{
 									...params.InputProps,
 								}}
 							/>
 						)}
-						onChange={(event, value) => field.onChange(value)} // 選択時にフィールドを更新
+					/>
+				)}
+			/>
+
+			{/* サブカテゴリーのAutocomplete */}
+			<Controller
+				name="subCategory"
+				control={control}
+				render={({ field }) => (
+					<Autocomplete
+						{...field}
+						sx={{ width: 300, marginTop: "16px" }}
+						options={subCategoryOptions}
+						getOptionLabel={(option: Category) => option.name} // nameフィールドを表示
+						loading={isSubCategoryLoading}
+						value={field.value}
+						onChange={(event, value) => field.onChange(value)} // サブカテゴリー選択時にフィールドを更新
+						renderInput={(params) => (
+							<TextField
+								{...params}
+								label="サブカテゴリー検索"
+								variant="outlined"
+								InputProps={{
+									...params.InputProps,
+								}}
+							/>
+						)}
 					/>
 				)}
 			/>

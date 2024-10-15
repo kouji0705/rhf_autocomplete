@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
-import type { Category, SubCategory } from "./type";
-import { fetchUserOptions, getCategories, getSubCategories } from "./api";
+import type { SubCategory } from "./type";
+import { getCategories, getSubCategories } from "./api";
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 export const useCategoryForm = () => {
 	const { control, watch, setValue } = useForm({
@@ -51,10 +52,67 @@ export const useCategoryForm = () => {
 	};
 };
 
-// カスタムフック: ユーザーのオプションを取得
-export const useUserOptions = (searchQuery: string) => {
+// // カスタムフック: ユーザーのオプションを取得
+// export const useUserOptions = (searchQuery: string) => {
+// 	return useQuery({
+// 		queryKey: ["users", searchQuery], // クエリキーを渡す
+// 		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
+// 	});
+// };
+
+// const fetchCategories = async (
+// 	searchName?: string,
+// ): Promise<PullDownOption[]> => {
+// 	const response = await axios.get("/api/category", {
+// 		params: { searchName }, // searchNameクエリパラメータをAPIに送る
+// 	});
+// 	return response.data.map((item: { id: number; name: string }) => ({
+// 		label: item.name,
+// 		value: item.id,
+// 	}));
+// };
+
+type Category = {
+	id: number;
+	key: string;
+	name: string;
+};
+
+const baseURL = "http://localhost:3000";
+
+// APIからカテゴリリストを取得する関数
+const fetchCategories = async (searchName?: string): Promise<Category[]> => {
+	const response = await axios.get(`${baseURL}/api/category`, {
+		params: { searchName }, // searchNameクエリパラメータをAPIに送る
+	});
+	return response.data; // APIから取得したデータをそのまま返す
+};
+
+// カスタムフック: カテゴリのオプションを取得
+export const useCategoryOptions = (searchName: string) => {
 	return useQuery({
-		queryKey: ["users", searchQuery], // クエリキーを渡す
-		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
+		queryKey: ["categories", searchName], // クエリキーをsearchNameに基づいて更新
+		queryFn: () => fetchCategories(searchName), // クエリ関数
+		enabled: true, // 初期ロード時もクエリを実行
+	});
+};
+
+// APIからサブカテゴリリストを取得する関数
+const fetchSubCategories = async (categoryId: number): Promise<Category[]> => {
+	const response = await axios.get(`${baseURL}/api/category/${categoryId}`);
+	return response.data;
+};
+
+// サブカテゴリのオプションを取得するカスタムフック
+export const useSubCategoryOptions = (categoryId: number | null) => {
+	return useQuery({
+		queryKey: ["subCategories", categoryId], // クエリキーをcategoryIdに基づいて設定
+		queryFn: () => {
+			if (categoryId === null) {
+				return Promise.resolve([]); // categoryIdがnullの場合は空配列を返す
+			}
+			return fetchSubCategories(categoryId); // categoryIdがnullでない場合はAPIを呼ぶ
+		},
+		enabled: categoryId !== null, // categoryIdがnullでない場合のみ実行
 	});
 };
