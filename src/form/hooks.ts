@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchCategories, fetchSubCategories } from "./api";
-import type { FormValues } from "./type";
+import { fetchCategories, fetchProduct, fetchSubCategories } from "./api";
+import type { FormValues, Product } from "./type";
 import { useForm } from "react-hook-form";
 
 // カスタムフック: カテゴリのオプションを取得
@@ -29,7 +29,15 @@ export const useSubCategoryOptions = (
 	});
 };
 
-export const useSearchAutocomplete = () => {
+// 製品データを取得するカスタムフック
+export const useProductQuery = (productId: number) => {
+	return useQuery({
+		queryKey: ["product", productId], // 製品IDに基づいてクエリを実行
+		queryFn: () => fetchProduct(productId), // 製品データの取得
+	});
+};
+
+export const useSearchAutocomplete = (product: Product) => {
 	const {
 		control,
 		watch,
@@ -38,8 +46,8 @@ export const useSearchAutocomplete = () => {
 		reset,
 	} = useForm<FormValues>({
 		defaultValues: {
-			category: null,
-			subCategory: null,
+			category: product.category,
+			subCategory: product.subCategory,
 		},
 	});
 
