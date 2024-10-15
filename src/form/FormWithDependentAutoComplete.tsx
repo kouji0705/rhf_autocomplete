@@ -88,12 +88,7 @@ export const SearchAutocomplete = () => {
 								variant="outlined"
 								InputProps={{
 									...params.InputProps,
-									endAdornment: (
-										<>
-											{loading ? <div>Loading...</div> : null}
-											{params.InputProps.endAdornment}
-										</>
-									),
+									endAdornment: <>{params.InputProps.endAdornment}</>,
 								}}
 							/>
 						)}
