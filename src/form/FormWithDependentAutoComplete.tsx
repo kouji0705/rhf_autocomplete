@@ -1,43 +1,14 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
-import axios from "axios";
-import {
-	useQuery,
-	QueryClient,
-	QueryClientProvider,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useUserOptions } from "./hooks";
 
 // クエリクライアントの初期化
 const queryClient = new QueryClient();
 
-// APIレスポンスの型定義
-interface UserResponse {
-	id: number;
-	name: string;
-}
-
-type Option = {
-	label: string;
-	value: number;
-};
-
 type FormValues = {
 	user: { label: string; value: number } | null;
-};
-
-// APIからユーザーリストを取得する関数
-const fetchUserOptions = async (query?: string): Promise<Option[]> => {
-	const response = await axios.get<UserResponse[]>(
-		"https://jsonplaceholder.typicode.com/users",
-		{
-			params: { q: query },
-		},
-	);
-	return response.data.map((item) => ({
-		label: item.name,
-		value: item.id,
-	}));
 };
 
 // ユーザー検索のためのAutocompleteコンポーネント
@@ -49,12 +20,8 @@ export const SearchAutocompleteComponent = () => {
 	});
 	const [searchQuery, setSearchQuery] = useState("");
 
-	// 初期ロードまたは検索結果を取得するためのクエリ
-	const { data: options = [], isLoading } = useQuery({
-		queryKey: ["users", searchQuery], // クエリキーをオブジェクトで渡す
-		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
-		enabled: true, // 検索クエリがあるときのみ実行
-	});
+	// カスタムフックを使ってクエリを実行
+	const { data: options = [], isLoading } = useUserOptions(searchQuery);
 
 	// ユーザーが入力した際にAPIを呼び出す関数
 	const handleInputChange = (value: string) => {
@@ -86,12 +53,6 @@ export const SearchAutocompleteComponent = () => {
 								variant="outlined"
 								InputProps={{
 									...params.InputProps,
-									endAdornment: (
-										<>
-											{isLoading ? <div>Loading...</div> : null}
-											{params.InputProps.endAdornment}
-										</>
-									),
 								}}
 							/>
 						)}
