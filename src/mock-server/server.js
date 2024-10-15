@@ -50,6 +50,31 @@ app.get("/api/category/:id", (req, res) => {
 	}
 });
 
+// サンプルデータ
+const products = [
+	{
+		id: 1,
+		category: { id: 1, key: "food", name: "食べ物" },
+		subCategory: { id: 1, key: "apple", name: "りんご" },
+	},
+	{
+		id: 2,
+		category: { id: 2, key: "animal", name: "動物" },
+		subCategory: { id: 1, key: "dog", name: "犬" },
+	},
+];
+
+app.get("/api/product/:id", (req, res) => {
+	const productId = Number.parseInt(req.params.id, 10);
+	const product = products.find((p) => p.id === productId);
+
+	if (product) {
+		res.json(product);
+	} else {
+		res.status(404).send("Product not found");
+	}
+});
+
 app.listen(port, () => {
 	console.log(`Mock API server running at http://localhost:${port}`);
 });
