@@ -1,25 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-
-type Category = {
-	id: number;
-	key: string;
-	name: string;
-};
-
-const apiClient = axios.create({
-	baseURL: "http://localhost:3000", // 共通のBaseURL
-});
-
-// APIからカテゴリリストを取得する関数
-export const fetchCategories = async (
-	searchName?: string,
-): Promise<Category[]> => {
-	const response = await apiClient.get("/api/category", {
-		params: { searchName }, // searchNameクエリパラメータをAPIに送る
-	});
-	return response.data; // APIから取得したデータをそのまま返す
-};
+import { fetchCategories, fetchSubCategories } from "./api";
 
 // カスタムフック: カテゴリのオプションを取得
 export const useCategoryOptions = (searchName: string) => {
@@ -30,16 +10,6 @@ export const useCategoryOptions = (searchName: string) => {
 	});
 };
 
-// APIからサブカテゴリリストを取得する関数
-export const fetchSubCategories = async (
-	categoryId: number,
-	searchName?: string,
-): Promise<Category[]> => {
-	const response = await apiClient.get(`/api/category/${categoryId}`, {
-		params: { searchName }, // searchNameクエリパラメータとして渡す
-	});
-	return response.data;
-};
 // サブカテゴリのオプションを取得するカスタムフック
 export const useSubCategoryOptions = (
 	categoryId: number | null,
