@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import type { Category, SubCategory } from "./type";
-import { getCategories, getSubCategories } from "./api";
+import { fetchUserOptions, getCategories, getSubCategories } from "./api";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 export const useCategoryForm = () => {
 	const { control, watch, setValue } = useForm({
@@ -52,36 +51,10 @@ export const useCategoryForm = () => {
 	};
 };
 
-// APIレスポンスの型定義
-interface UserResponse {
-	id: number;
-	name: string;
-}
-
-type Option = {
-	label: string;
-	value: number;
-};
-
-// APIからユーザーリストを取得する関数
-const fetchUserOptions = async (query?: string): Promise<Option[]> => {
-	const response = await axios.get<UserResponse[]>(
-		"https://jsonplaceholder.typicode.com/users",
-		{
-			params: { q: query },
-		},
-	);
-	return response.data.map((item) => ({
-		label: item.name,
-		value: item.id,
-	}));
-};
-
 // カスタムフック: ユーザーのオプションを取得
 export const useUserOptions = (searchQuery: string) => {
 	return useQuery({
 		queryKey: ["users", searchQuery], // クエリキーを渡す
 		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
-		enabled: true, // 初回ロード時も実行
 	});
 };

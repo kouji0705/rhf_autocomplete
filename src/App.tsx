@@ -1,14 +1,12 @@
-// import { SearchAutocomplete } from "./SearchComplete";
-
-import { SearchAutocomplete } from "./form/FormWithDependentAutoComplete";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SearchAutocomplete } from "./form/Form";
 
 function App() {
+	const queryClient = new QueryClient();
 	return (
-		<div>
-			{/* <FormWithDependentSelects /> */}
+		<QueryClientProvider client={queryClient}>
 			<SearchAutocomplete />
-			{/* <CategoryForm /> */}
-		</div>
+		</QueryClientProvider>
 	);
 }
 

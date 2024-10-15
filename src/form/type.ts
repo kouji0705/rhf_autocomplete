@@ -20,3 +20,7 @@ export type PullDownOption = {
 	label: string;
 	value: number;
 };
+
+export type FormValues = {
+	user: { label: string; value: number } | null;
+};

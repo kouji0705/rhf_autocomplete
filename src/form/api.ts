@@ -1,5 +1,10 @@
 import axios from "axios";
-import type { Category, SubCategory } from "./type";
+import type {
+	Category,
+	PullDownOption,
+	SubCategory,
+	UserResponse,
+} from "./type";
 
 const baseUrl = "http://localhost:3000/api";
 
@@ -15,8 +20,9 @@ export const getSubCategories = async (categoryId: number) => {
 	return response.data;
 };
 
-// 非同期データ取得ロジック
-export const fetchUserOptions = async (query?: string): Promise<Option[]> => {
+export const fetchUserOptions = async (
+	query?: string,
+): Promise<PullDownOption[]> => {
 	const response = await axios.get<UserResponse[]>(
 		"https://jsonplaceholder.typicode.com/users",
 		{
