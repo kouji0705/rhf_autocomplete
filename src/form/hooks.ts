@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import type { Category, SubCategory } from "./type";
-import { getCategories, getSubCategories } from "./api";
+import { fetchUserOptions, getCategories, getSubCategories } from "./api";
+import { useQuery } from "@tanstack/react-query";
 
 export const useCategoryForm = () => {
 	const { control, watch, setValue } = useForm({
@@ -48,4 +49,12 @@ export const useCategoryForm = () => {
 		subCategoryOptions,
 		selectedCategory,
 	};
+};
+
+// カスタムフック: ユーザーのオプションを取得
+export const useUserOptions = (searchQuery: string) => {
+	return useQuery({
+		queryKey: ["users", searchQuery], // クエリキーを渡す
+		queryFn: () => fetchUserOptions(searchQuery), // クエリ関数
+	});
 };
