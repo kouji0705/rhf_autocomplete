@@ -1,10 +1,5 @@
 import axios from "axios";
-
-type Category = {
-	id: number;
-	key: string;
-	name: string;
-};
+import type { Category } from "./type";
 
 export const apiClient = axios.create({
 	baseURL: "http://localhost:3000", // 共通のBaseURL

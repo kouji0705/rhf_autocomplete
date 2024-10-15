@@ -13,28 +13,6 @@ export const SearchAutocomplete = () => {
 		isSubCategoryLoading,
 		setValue,
 	} = useSearchAutocomplete();
-	// const { control, watch, setValue } = useForm<FormValues>({
-	// 	defaultValues: {
-	// 		category: null,
-	// 		subCategory: null,
-	// 	},
-	// });
-
-	// // 親カテゴリーの監視
-	// const selectedCategory = watch("category");
-	// const categoryId = selectedCategory?.id || null;
-
-	// // 親カテゴリーの検索に基づくオプションを取得
-	// const { data: categoryOptions = [], isLoading: isCategoryLoading } =
-	// 	useCategoryOptions(watch("category")?.name || "");
-
-	// // サブカテゴリー検索のための監視
-	// const subCategorySearchName = watch("subCategory")?.name || "";
-
-	// // サブカテゴリーのオプションを取得
-	// const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
-	// 	useSubCategoryOptions(categoryId, subCategorySearchName);
-
 	return (
 		<form>
 			{/* 親カテゴリーのAutocomplete */}

@@ -43,7 +43,7 @@ export const useSearchAutocomplete = () => {
 
 	// 親カテゴリーの検索に基づくオプションを取得
 	const { data: categoryOptions = [], isLoading: isCategoryLoading } =
-		useCategoryOptions(watch("category")?.name || "");
+		useCategoryOptions(selectedCategory?.name || "");
 
 	// サブカテゴリー検索のための監視
 	const subCategorySearchName = watch("subCategory")?.name || "";
