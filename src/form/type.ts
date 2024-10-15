@@ -16,10 +16,6 @@ export type PullDownOption = {
 	value: number;
 };
 
-// export type FormValues = {
-// 	user: { label: string; value: number } | null;
-// };
-
 // Category型
 export type Category = {
 	id: number;
@@ -29,5 +25,5 @@ export type Category = {
 
 // FormValuesの型定義
 export type FormValues = {
-	user: Category | null; // userはCategory型またはnull
+	category: Category | null; // userはCategory型またはnull
 };

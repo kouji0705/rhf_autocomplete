@@ -89,7 +89,7 @@ const fetchCategories = async (searchName?: string): Promise<Category[]> => {
 };
 
 // カスタムフック: カテゴリのオプションを取得
-export const useUserOptions = (searchName: string) => {
+export const useCategoryOptions = (searchName: string) => {
 	return useQuery({
 		queryKey: ["categories", searchName], // クエリキーをsearchNameに基づいて更新
 		queryFn: () => fetchCategories(searchName), // クエリ関数
