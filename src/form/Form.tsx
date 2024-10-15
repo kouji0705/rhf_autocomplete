@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
 import { useCategoryOptions, useSubCategoryOptions } from "./hooks";
@@ -83,7 +82,7 @@ export const SearchAutocomplete = () => {
 									...field.value,
 									name: value,
 									id: field.value.id ?? 0,
-								}); // idがundefinedの場合はデフォルト値をセット
+								});
 							}
 						}} // サブカテゴリーの入力変更時にsearchNameを更新
 						onChange={(event, value) => field.onChange(value)} // サブカテゴリー選択時にフィールドを更新
