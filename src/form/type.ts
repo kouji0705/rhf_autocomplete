@@ -25,5 +25,6 @@ export type Category = {
 
 // FormValuesの型定義
 export type FormValues = {
-	category: Category | null; // userはCategory型またはnull
+	category: Category | null; // 親カテゴリー
+	subCategory: Category | null; // サブカテゴリー
 };

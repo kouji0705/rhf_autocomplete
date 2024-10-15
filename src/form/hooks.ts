@@ -96,3 +96,23 @@ export const useCategoryOptions = (searchName: string) => {
 		enabled: true, // 初期ロード時もクエリを実行
 	});
 };
+
+// APIからサブカテゴリリストを取得する関数
+const fetchSubCategories = async (categoryId: number): Promise<Category[]> => {
+	const response = await axios.get(`/api/category/${categoryId}`);
+	return response.data;
+};
+
+// サブカテゴリのオプションを取得するカスタムフック
+export const useSubCategoryOptions = (categoryId: number | null) => {
+	return useQuery({
+		queryKey: ["subCategories", categoryId], // クエリキーをcategoryIdに基づいて設定
+		queryFn: () => {
+			if (categoryId === null) {
+				return Promise.resolve([]); // categoryIdがnullの場合は空配列を返す
+			}
+			return fetchSubCategories(categoryId); // categoryIdがnullでない場合はAPIを呼ぶ
+		},
+		enabled: categoryId !== null, // categoryIdがnullでない場合のみ実行
+	});
+};
