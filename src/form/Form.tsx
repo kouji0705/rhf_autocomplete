@@ -1,39 +1,42 @@
-import { useForm, Controller } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { TextField, Autocomplete } from "@mui/material";
-import { useCategoryOptions, useSubCategoryOptions } from "./hooks";
-import type { FormValues, Category } from "./type";
+import { useSearchAutocomplete } from "./hooks";
+import type { Category } from "./type";
 
 // ユーザー検索のためのAutocompleteコンポーネント
 export const SearchAutocomplete = () => {
-	const { control, handleSubmit, watch, setValue } = useForm<FormValues>({
-		defaultValues: {
-			category: null,
-			subCategory: null,
-		},
-	});
+	const {
+		control,
+		categoryOptions,
+		isCategoryLoading,
+		subCategoryOptions,
+		isSubCategoryLoading,
+		setValue,
+	} = useSearchAutocomplete();
+	// const { control, watch, setValue } = useForm<FormValues>({
+	// 	defaultValues: {
+	// 		category: null,
+	// 		subCategory: null,
+	// 	},
+	// });
 
-	// 親カテゴリーの監視
-	const selectedCategory = watch("category");
-	const categoryId = selectedCategory?.id || null;
+	// // 親カテゴリーの監視
+	// const selectedCategory = watch("category");
+	// const categoryId = selectedCategory?.id || null;
 
-	// 親カテゴリーの検索に基づくオプションを取得
-	const { data: categoryOptions = [], isLoading: isCategoryLoading } =
-		useCategoryOptions(watch("category")?.name || "");
+	// // 親カテゴリーの検索に基づくオプションを取得
+	// const { data: categoryOptions = [], isLoading: isCategoryLoading } =
+	// 	useCategoryOptions(watch("category")?.name || "");
 
-	// サブカテゴリー検索のための監視
-	const subCategorySearchName = watch("subCategory")?.name || "";
+	// // サブカテゴリー検索のための監視
+	// const subCategorySearchName = watch("subCategory")?.name || "";
 
-	// サブカテゴリーのオプションを取得
-	const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
-		useSubCategoryOptions(categoryId, subCategorySearchName);
-
-	// フォームの送信処理
-	const onSubmit = (data: FormValues) => {
-		console.log("選択されたデータ:", data);
-	};
+	// // サブカテゴリーのオプションを取得
+	// const { data: subCategoryOptions = [], isLoading: isSubCategoryLoading } =
+	// 	useSubCategoryOptions(categoryId, subCategorySearchName);
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)}>
+		<form>
 			{/* 親カテゴリーのAutocomplete */}
 			<Controller
 				name="category"
